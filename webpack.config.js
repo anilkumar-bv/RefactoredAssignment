@@ -3,8 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const htmlWebpackPlugin = new HtmlWebpackPlugin({
-    template: path.join(process.cwd(), "./src/Index.html"),
-    filename: "./index.html"
+    template: path.join(process.cwd(), "./src/Index.html")
 });
 
 module.exports = {
@@ -22,7 +21,7 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['env']
+                        presets: ['env', "stage-0"]
                     }
                 }
             },

@@ -1,4 +1,6 @@
-//import { httpAsync } from './services';
+//import { httpAsync,getParameterByName}  from './services';
+import { httpAsync } from './services';
+
 //import { createMovieCard } from './movies';
 
 // function to get Parameter by Name
@@ -17,7 +19,7 @@ const collectionsUrl = 'http://localhost:3000/userCollections';
 
 console.log(collectionsUrl);
 
-function getDifferentCollections(responseText) {
+export function getDifferentCollections(responseText) {
     let allMoviesFromCollections = JSON.parse(responseText);
     console.log(allMoviesFromCollections);
     let movieGenre;
@@ -35,9 +37,10 @@ function getDifferentCollections(responseText) {
 }
 
 // Get different Collections
-//httpAsync(collectionsUrl, getDifferentCollections, "GET", null);
-httpGetAsync(collectionsUrl, getDifferentCollections);
+httpAsync(collectionsUrl, getDifferentCollections, "GET", null);
+//httpGetAsync(collectionsUrl, getDifferentCollections);
 
+/*
 // function to make the HTTP GET call
 function httpGetAsync(theUrl, callback) {
     var xmlHttp = new XMLHttpRequest();
@@ -48,6 +51,7 @@ function httpGetAsync(theUrl, callback) {
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send(null);
 }
+*/
 
 
 let url = null;
@@ -142,4 +146,5 @@ function updateCollection(e) {
 }
 
 // GET the Movies
-httpGetAsync(url, processResponse);
+//httpGetAsync(url, processResponse);
+httpAsync(url, processResponse, 'GET', null);

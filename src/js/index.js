@@ -1,7 +1,15 @@
 import { httpAsync } from './services';
-import { createMovieCard } from './movies';
+import {
+    createMovieCard,
+    createInitialSection,
+    createMovieSection,
+    clearBox
+} from './movies';
+import { getDifferentCollections } from './movie';
 
 const searchButton = document.getElementById('search');
+const initalHtml = createInitialSection();
+document.getElementById('contentDiv').appendChild(initalHtml);
 
 // Filter event
 searchButton.addEventListener('click', filterItems);
@@ -103,6 +111,24 @@ function filterItems() {
         return false;
     }
 
+    // clear the Contents of the Main div Tag
+    clearBox('contentDiv');
+    //clearBox('headerDiv');
+
+    // get the initial html section
+    let movieSection = createMovieSection();
+    document.getElementById('contentDiv').appendChild(initalHtml);
+
+    let collectionTypes = ['Select'];
+    const collectionsUrl = 'http://localhost:3000/userCollections';
+
+    // Get different Collections
+    httpAsync(collectionsUrl, getDifferentCollections, "GET", null);
+
+    // get the movie id
+    let movieId = document.getElementById('');
+
+    url = 'https://api.themoviedb.org/3/movie/' + filter + '?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1';
     // Redirect to the Search Screen to fetch Results
     window.location.href = '../src/moviesCollection.html?movieFilter=' + text;
 }
