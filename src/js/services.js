@@ -7,8 +7,23 @@ export function httpAsync(theUrl, callback, method, data = null) {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(xmlHttp.responseText);
     }
-    xmlHttp.open(method, theUrl, true); // true for asynchronous 
+    xmlHttp.open(method, theUrl, false); // true for asynchronous 
     xmlHttp.send(data);
+}
+
+export function httpPostOrPut(url, method, data) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+    xhr.onload = function () {
+        var response = JSON.parse(xhr.responseText);
+        if (xhr.readyState == 4 && xhr.status == "201") {
+            console.table(response);
+        } else {
+            //console.error(response);
+        }
+    }
+    xhr.send(data);
 }
 
 // function to get Query string Parameter by Name
