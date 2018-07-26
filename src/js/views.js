@@ -120,7 +120,7 @@ const createInitialSection = () => {
                         <div class="card-group">
                             <div class="card">
                                 <h2 class="card-title">User Collections</h2>
-                                <a href="../src/userCollections.html">View all Collections</a>
+                                <button href="#" class="addBtn btn btn-primary">View all Collections</button>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-sm-12">
@@ -176,8 +176,15 @@ const createInitialSection = () => {
     </section>
     `);
 
+    const userCollections = mainPage.querySelector('button');
+    userCollections.addEventListener('click', getAllUserCollections);
+
     return mainPage;
 };
+
+function getAllUserCollections() {
+
+}
 
 export const createMovieSection = () => {
     let movieDetailHtml = createHTMLElement(
@@ -344,6 +351,44 @@ function createHTMLElement(html) {
     const template = document.createElement('template');
     template.innerHTML = html;
     return template.content.firstElementChild;
+}
+
+export const createInitialUserCollectionsHtml = () => {
+    let initialCollectionsSection = createHTMLElement(
+        `
+        <section id="Movies">
+        <div class="section-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="card-title">User Collections</h2>
+                                <div class="card-group" id="userCollectionsCard">
+                                    <select name="collectionsList" id="collectionsList">
+                                        <option value="Select">Select</option>
+                                    </select>
+                                    <button id='displayCollection' class="btn btn-info">Display Movies</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input type="text" class="form-control" id="addCollectionInput" placeholder="Add Collection...">
+                                <button type="button" class="btn btn-dark" id="addCollectionButton">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </div>
+    </section>
+        `
+    );
+
+    let displayButton = initialCollectionsSection.querySelector('.btn btn-info');
+    displayButton.addEventListener('click', displayMovies);
+
+    return initialCollectionsSection;
 }
 
 function getMovieDetails(e) {
