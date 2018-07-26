@@ -84,7 +84,7 @@ export const createMovieDetailCard = (movie) => {
         <h3>${movie.title}</h3>
         <h5>user score: ${movie.vote_average.toString()}</h5>
         <h5>Overview</h5>
-        <span>Add Collection to: </span>
+        <span>Add to Collection: </span>
         <select id='categorySelect'>
             <option value="Select">Select</option>
             <option value="Action">Action</option>
