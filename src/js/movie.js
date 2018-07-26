@@ -75,6 +75,14 @@ function processResponse(responseText) {
     movie = JSON.parse(responseText);
     console.log(movie);
 
+    /*
+    <div class="col-sm-6" id="descriptionDiv">
+        <h3>Jurassic World: Fallen Kingdom</h3>
+        <h5>user score: 66%</h5>
+        <h5>Overview</h5>
+        <p>Several years after the demise of Jurassic World, a volcanic eruption threatens the remaining dinosaurs on the island of Isla Nublar. Claire Dearing, the former park manager and founder of the Dinosaur Protection Group, recruits Owen Grady to help prevent the extinction of the dinosaurs once again.</p>
+        </div>
+    */
     var imageDiv = document.getElementById('imageDiv');
     var imageTag = document.createElement('img');
     imageTag.src = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2' + movie.poster_path;
