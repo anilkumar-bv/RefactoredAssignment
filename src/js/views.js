@@ -75,17 +75,6 @@ function removeMovie(e) {
 function removeFromStorage(movieId) {
     var url = "http://localhost:3000/userCollections/" + movieId;
     httpPostOrPut(url, 'DELETE', null);
-    // var xhr = new XMLHttpRequest();
-    // xhr.open("DELETE", url, true);
-    // xhr.onload = function () {
-    //     var users = JSON.parse(xhr.responseText);
-    //     if (xhr.readyState == 4 && xhr.status == "200") {
-    //         console.table(users);
-    //     } else {
-    //         console.error(users);
-    //     }
-    // }
-    // xhr.send(null);
 }
 
 export const createMovieDetailCard = (movie) => {
@@ -291,13 +280,95 @@ const createInitialSection = () => {
 };
 
 function getAllUserCollections() {
-    alert('in All Collections');
 
     // Clear the content
-    //clearBox('contentDiv');
-    //const userCollectionSectionHtml = createInitialUserCollectionsHtml();
-    //document.getElementById('contentDiv').appendChild(userCollectionSectionHtml);
+    clearBox('contentDiv');
+    const userCollectionSectionHtml = createInitialUserCollectionsHtml();
+    document.getElementById('contentDiv').appendChild(userCollectionSectionHtml);
 
+    let addCollectionButton = document.getElementById('addCollectionButton');
+    addCollectionButton.addEventListener('click', addCollection);
+
+    // let displayButton = document.getElementById('displayCollection');
+    // displayButton.addEventListener('click', displayMovies);
+
+    // Get the User Collection Movies
+    let urlForUserCollections = "http://localhost:3000/collectionTypes";
+
+    console.log(urlForUserCollections);
+
+    httpAsync(urlForUserCollections, getDifferentUserCollections, 'GET', null);
+
+}
+
+function addCollection() {
+    let collectionInput = document.getElementById('addCollectionInput');
+    let inputText = collectionInput.value;
+
+    let url = 'http://localhost:3000/collectionTypes';
+
+    // create a Post Request
+    let json = JSON.stringify(inputText);
+
+    // Add to the CollectionTypes
+    httpPostOrPut(url,'POST',json );
+
+    // Reload the page to get the updated Collections
+    getAllUserCollections();
+}
+
+function getDifferentUserCollections(responseText) {
+    let response = JSON.parse(responseText);
+    console.log(response);
+
+    //console.log(response.results[0]);
+    if (response.length > 0) {
+        let selectList = document.getElementById('collectionsList');
+        let button = document.getElementById('displayCollection');
+
+        // Loop through all the movies to fetch unique genre
+        for (let i = 0; i < response.length; i++) {
+            let localCollection = response[i];
+
+            let option = document.createElement("option");
+            option.value = localCollection;
+            option.text = localCollection;
+            selectList.appendChild(option);
+        }
+
+        // Add click function
+        button.addEventListener('click', displayMoviesOfCollection);
+    }
+}
+
+let collection = null;
+
+function displayMoviesOfCollection() {
+    let selectList = document.getElementById('collectionsList');
+    collection = selectList.options[selectList.selectedIndex].value;
+    if (collection === 'Select') {
+        alert('Please select a Collection');
+        return false;
+    }
+
+    //window.location.href = '../src/userCollection.html?collection=' + collection;
+    switch (collection) {
+        case 'Action':
+            getActionUserCollections();
+            break;
+        case 'Thriller':
+            getThrillerUserCollections();
+            break;
+        case 'Comedy':
+            getComedyUserCollections();
+            break;
+        case 'Fiction':
+            geFictionUserCollections();
+            break;
+        case 'Horror':
+            getHorrorUserCollections();
+            break;
+    }
 }
 
 export const createMovieSection = () => {
@@ -321,7 +392,6 @@ export const createMovieSection = () => {
     return movieDetailHtml;
 };
 
-let collection = null;
 function getActionUserCollections() {
 
     // clear the Contents of the Main div Tag
@@ -330,15 +400,14 @@ function getActionUserCollections() {
     document.getElementById('contentDiv').appendChild(userCollectionHtml);
 
     collection = 'Action';
-    var span = document.getElementById('searchFilterText');
+    let span = document.getElementById('searchFilterText');
     span.innerHTML = '<em>' + collection + '</em>';
 
-    var urlForUserCollections = "http://localhost:3000/userCollections";
+    let urlForUserCollections = "http://localhost:3000/userCollections";
     console.log(urlForUserCollections);
 
     // GET the Movies
     httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-
 }
 
 function processResponseForCollection(responseText) {
@@ -694,8 +763,7 @@ export const createInitialUserCollectionsHtml = () => {
         `
     );
 
-    let displayButton = initialCollectionsSection.querySelector('.btn btn-info');
-    displayButton.addEventListener('click', displayMovies);
+
 
     return initialCollectionsSection;
 }
