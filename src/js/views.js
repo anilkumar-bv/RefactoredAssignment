@@ -77,7 +77,7 @@ function removeFromStorage(movieId) {
     httpPostOrPut(url, 'DELETE', null);
 }
 
-export const createMovieDetailCard = (movie) => {
+const createMovieDetailCard = (movie) => {
     let movieDetailTag = createHTMLElement(
         `
         <div>
@@ -371,7 +371,7 @@ function displayMoviesOfCollection() {
     }
 }
 
-export const createMovieSection = () => {
+const createMovieSection = () => {
     let movieDetailHtml = createHTMLElement(
         `
         <section id="movie-details">
@@ -422,17 +422,6 @@ function processResponseForCollection(responseText) {
 
         for (let i = 0; i <= response.length; i++) {
             /*
-            <div class="card">
-                <div class="card-body" id="movie1">
-                    <h5 class="card-title">Most Popular</h5>
-                    <a href="">
-                        <img src="" alt="" />
-                    </a>
-                    <p>Movie Description</p>
-                </div>
-            </div>
-
-
             <div class="card-body">
             <h5 class="card-title">Jurassic School</h5>
             <a href="../src/movie.html?movieId=438817&amp;source=userCollection"><img src="https://image.tmdb.org/t/p/w185_and_h278_bestv2/ykgi4N8r5YqL3LOi1SFrYPWjK74.jpg" alt="Jurassic School"></a>
@@ -731,7 +720,7 @@ function createHTMLElement(html) {
     return template.content.firstElementChild;
 }
 
-export const createInitialUserCollectionsHtml = () => {
+const createInitialUserCollectionsHtml = () => {
     let initialCollectionsSection = createHTMLElement(
         `
         <section id="Movies">
@@ -783,14 +772,6 @@ function getMovieDetails(e) {
 
 function processResponseForMovieDetail(responseText) {
 
-    let collectionTypes = ['Select'];
-    const collectionsUrl = 'http://localhost:3000/collectionTypes';
-
-    console.log(collectionsUrl);
-
-    // Get different Collections
-    httpAsync(collectionsUrl, getDifferentCollections, "GET", null);
-
     let movie = JSON.parse(responseText);
     /*
     <div class="col-sm-6" id="descriptionDiv">
@@ -809,62 +790,4 @@ function processResponseForMovieDetail(responseText) {
 
     let descriptionDiv = document.getElementById('descriptionDiv');
     descriptionDiv.appendChild(createMovieDetailCard(movie));
-
-    /*
-    var h3 = document.createElement('h3');
-    h3.textContent = movie.title;
-    var voterAvgTag = document.createElement('h5');
-    voterAvgTag.textContent = 'user score: ' + movie.vote_average.toString().replace('.', '') + '%';
-    var h5 = document.createElement('h5');
-    h5.textContent = 'Overview';
-
-    if (movie.genre) {
-        var genreTag = document.createElement('h5');
-        genreTag.textContent = 'Collection: ' + movie.genre;
-        var spanTagForChangeCollection = document.createElement('span');
-        spanTagForChangeCollection.textContent = 'Change Collection to: ';
-        var selectForCollections = document.createElement('select');
-
-        //Create and append the options
-        for (var i = 0; i < collectionTypes.length; i++) {
-            var option = document.createElement("option");
-            option.value = collectionTypes[i];
-            option.text = collectionTypes[i];
-            selectForCollections.appendChild(option);
-        }
-
-        selectForCollections.addEventListener('change', updateCollection);
-    }
-
-    var descriptionTag = document.createElement('p');
-    descriptionTag.textContent = movie.overview;
-
-    descriptionDiv.appendChild(h3);
-    descriptionDiv.appendChild(voterAvgTag);
-    if (movie.genre) {
-        descriptionDiv.appendChild(genreTag);
-        descriptionDiv.appendChild(spanTagForChangeCollection);
-        descriptionDiv.appendChild(selectForCollections);
-    }
-    descriptionDiv.appendChild(h5);
-    descriptionDiv.appendChild(descriptionTag);
-    */
-}
-
-function getDifferentCollections(responseText) {
-    let allMoviesFromCollections = JSON.parse(responseText);
-    console.log(allMoviesFromCollections);
-    /*
-    let movieGenre;
-    if (allMoviesFromCollections.length > 0) {
-        for (let i = 0; i <= allMoviesFromCollections.length; i++) {
-            let localMovie = allMoviesFromCollections[i];
-            if (localMovie) {
-                if (collectionTypes.indexOf(localMovie) === -1) {
-                    collectionTypes.push(localMovie);
-                }
-            }
-        }
-    }
-    */
 }
