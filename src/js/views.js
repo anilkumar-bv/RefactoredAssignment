@@ -1,5 +1,5 @@
 
-import { httpAsync, httpPostOrPut, clearBox } from './services';
+import { httpAsync, httpPostOrPut, clearBox, httpSync } from './services';
 
 const createMovieCard = (movie, isUserCollection = false) => {
     let movieCard = createHTMLElement(`
@@ -447,7 +447,7 @@ function processResponseForCollection(responseText) {
                 let movieId = movie.id;
                 let url = 'https://api.themoviedb.org/3/movie/' + movieId + '?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1';
 
-                httpAsync(url, (responseText) => {
+                httpSync(url, (responseText) => {
                     let desiredMovie = JSON.parse(responseText);
                     console.log(desiredMovie);
                     let desiredMovieDiv = createMovieCardForCollection(desiredMovie);

@@ -7,6 +7,16 @@ export function httpAsync(theUrl, callback, method, data = null) {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             callback(xmlHttp.responseText);
     }
+    xmlHttp.open(method, theUrl, true); // true for asynchronous 
+    xmlHttp.send(data);
+}
+
+export function httpSync(theUrl, callback, method, data = null) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
     xmlHttp.open(method, theUrl, false); // true for asynchronous 
     xmlHttp.send(data);
 }
