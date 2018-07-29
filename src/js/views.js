@@ -1,7 +1,7 @@
 
 import { httpAsync, httpPostOrPut, clearBox, httpSync } from './services';
 
-const createMovieCard = (movie, isUserCollection = false) => {
+const createMovieCard = (movie) => {
     let movieCard = createHTMLElement(`
       <div class="card" style="width: 18rem;">
         <div class="card-body">
@@ -455,7 +455,7 @@ function processResponseForPopular(responseText) {
 
         for (var i = 0; i < 12; i++) {
             let movie = response.results[i];
-            let cardDiv = createMovieCard(movie, false);
+            let cardDiv = createMovieCard(movie);
 
             if (i <= 2)
                 movieDiv1.appendChild(cardDiv);
