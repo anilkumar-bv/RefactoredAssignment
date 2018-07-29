@@ -66,15 +66,37 @@ function removeMovie(e) {
             var divCardToDelete = document.getElementById(movieId);
             var divCardParent = divCardToDelete.parentElement;
             divCardParent.removeChild(divCardToDelete);
-            removeFromStorage(movieId);
+            removeFromCollection(movieId);
         }
     }
 }
 
-// function to Delete the movie from the Storage
-function removeFromStorage(movieId) {
-    var url = "http://localhost:3000/userCollections/" + movieId;
-    httpPostOrPut(url, 'DELETE', null);
+// function to remove MovieId from the Collection
+function removeFromCollection(movieId) {
+
+    // fetch the Collection first.
+    let collectionName = document.getElementById('searchFilterText').textContent;
+
+    let url = "http://localhost:3000/userCollections?name=" + collectionName;
+    console.log(url);
+
+    // Fetch Collection details
+    httpSync(url, (responseText) => {
+        let response = JSON.parse(responseText);
+        let index = response[0].movies.indexOf(parseInt(movieId));
+        let collectionId = response[0].id;
+        if (index > -1) {
+            response[0].movies.splice(index, 1);
+        }
+
+        //Update the DB
+        var url = 'http://localhost:3000/userCollections/' + collectionId;
+
+        // create a Post Request
+        var json = JSON.stringify(response[0]);
+        httpPostOrPut(url, 'PUT', json);
+
+    }, 'GET', null);
 }
 
 const createMovieDetailCard = (movie) => {
@@ -85,13 +107,8 @@ const createMovieDetailCard = (movie) => {
         <h5>user score: ${movie.vote_average.toString()}</h5>
         <h5>Overview</h5>
         <span>Add to Collection: </span>
-        <select id='categorySelect'>
-            <option value="Select">Select</option>
-            <option value="Action">Action</option>
-            <option value="Thriller">Thriller</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Science Fiction">Science Fiction</option>
-            <option value="Horror">Horror</option>
+        <select id='collectionsList'>
+                
         </select>
         <button href="#" class="addBtn btn btn-primary"  id='${movie.id}'>Add</button>
         <p>${movie.overview}</p>
@@ -105,16 +122,37 @@ const createMovieDetailCard = (movie) => {
 }
 
 function addMovieToCollection(e) {
-    let sampleMovie = {};
-    sampleMovie.id = parseInt(e.target.id);
-    let selectedCategory = document.getElementById('categorySelect').value;
-    sampleMovie.genre = selectedCategory;
+    let selectedCategoryId = document.getElementById('collectionsList').value;
+    let url = 'http://localhost:3000/userCollections/' + selectedCategoryId;
 
-    var url = 'http://localhost:3000/userCollections';
+    console.log(url);
+
+    // Fetch Collection details
+    httpAsync(url, getCollectionDetailAndUpdate, 'GET', null);
+}
+
+function getCollectionDetailAndUpdate(responseText) {
+    let addButton = document.getElementsByClassName('addBtn btn btn-primary')[0];
+    // <button href="#" class="addBtn btn btn-primary" id="394537">Add</button>
+    let movieId = parseInt(addButton.id);
+    let response = JSON.parse(responseText);
+    let selectedCategoryId = document.getElementById('collectionsList').value;
+    let index = response.movies.indexOf(movieId);
+
+    if (index > -1) {
+        alert('Movie is already part of the Collection');
+        return;
+    }
+    else {
+        response.movies.push(movieId);
+    }
+
+    //Update the DB
+    var url = 'http://localhost:3000/userCollections/' + selectedCategoryId;
 
     // create a Post Request
-    var json = JSON.stringify(sampleMovie);
-    httpPostOrPut(url, 'POST', json);
+    var json = JSON.stringify(response);
+    httpPostOrPut(url, 'PUT', json);
 }
 
 function getTruncatedMovieDescription(movieTitle) {
@@ -221,51 +259,8 @@ const createInitialSection = () => {
                             <div class="card">
                                 <h2 class="card-title">User Collections</h2>
                                 <button href="#" class="addBtn btn btn-primary" id='allCollections'>View all Collections</button>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <h4>Action</h4>
-                                            <div class="card-group" id="userCardAction">
-                                            </div>
-                                            <button href="#" class="addBtn btn btn-primary" id='actionMore'>More...</button>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <h4>Thriller</h4>
-                                            <div class="card-group" id="userCardThriller">
-                                            </div>
-                                            <button href="#" class="addBtn btn btn-primary" id='thrillerMore'>More...</button>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <h4>Comedy</h4>
-                                            <div class="card-group" id="userCardComedy">
-                                            </div>
-                                            <button href="#" class="addBtn btn btn-primary" id='comedyMore'>More...</button>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <h4>Science Fiction</h4>
-                                            <div class="card-group" id="userCardScienceFiction">
-                                            </div>
-                                            <button href="#" class="addBtn btn btn-primary" id='fictionMore'>More...</button>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <h4>Horror</h4>
-                                            <div class="card-group" id="userCardHorror">
-                                            </div>
-                                            <button href="#" class="addBtn btn btn-primary" id='horrorMore'>More...</button>
-                                        </div>
-                                    </div>
+                                <div class="card-body" id="userCollectionsCardBody">
+                                    
                                 </div>
                             </div>
                         </div>
@@ -279,6 +274,8 @@ const createInitialSection = () => {
     return mainPage;
 };
 
+
+
 function getAllUserCollections() {
 
     // Clear the content
@@ -289,11 +286,11 @@ function getAllUserCollections() {
     let addCollectionButton = document.getElementById('addCollectionButton');
     addCollectionButton.addEventListener('click', addCollection);
 
-    // let displayButton = document.getElementById('displayCollection');
-    // displayButton.addEventListener('click', displayMovies);
+    let displayButton = document.getElementById('displayCollection');
+    displayButton.addEventListener('click', displayMoviesOfCollection);
 
     // Get the User Collection Movies
-    let urlForUserCollections = "http://localhost:3000/collectionTypes";
+    let urlForUserCollections = "http://localhost:3000/userCollections";
 
     console.log(urlForUserCollections);
 
@@ -305,13 +302,17 @@ function addCollection() {
     let collectionInput = document.getElementById('addCollectionInput');
     let inputText = collectionInput.value;
 
-    let url = 'http://localhost:3000/collectionTypes';
+    let newUserCollection = {};
+    newUserCollection.name = inputText;
+    newUserCollection.movies = [];
+
+    let url = 'http://localhost:3000/userCollections';
 
     // create a Post Request
-    let json = JSON.stringify(inputText);
+    let json = JSON.stringify(newUserCollection);
 
     // Add to the CollectionTypes
-    httpPostOrPut(url,'POST',json );
+    httpPostOrPut(url, 'POST', json);
 
     // Reload the page to get the updated Collections
     getAllUserCollections();
@@ -324,20 +325,17 @@ function getDifferentUserCollections(responseText) {
     //console.log(response.results[0]);
     if (response.length > 0) {
         let selectList = document.getElementById('collectionsList');
-        let button = document.getElementById('displayCollection');
 
         // Loop through all the movies to fetch unique genre
         for (let i = 0; i < response.length; i++) {
-            let localCollection = response[i];
+            let collectionName = response[i].name;
+            let collectionId = response[i].id;
 
             let option = document.createElement("option");
-            option.value = localCollection;
-            option.text = localCollection;
+            option.value = collectionId;
+            option.text = collectionName;
             selectList.appendChild(option);
         }
-
-        // Add click function
-        button.addEventListener('click', displayMoviesOfCollection);
     }
 }
 
@@ -345,30 +343,14 @@ let collection = null;
 
 function displayMoviesOfCollection() {
     let selectList = document.getElementById('collectionsList');
-    collection = selectList.options[selectList.selectedIndex].value;
+    let collectionId = selectList.options[selectList.selectedIndex].value;
+    collection = selectList.options[selectList.selectedIndex].text;
     if (collection === 'Select') {
         alert('Please select a Collection');
         return false;
     }
 
-    //window.location.href = '../src/userCollection.html?collection=' + collection;
-    switch (collection) {
-        case 'Action':
-            getActionUserCollections();
-            break;
-        case 'Thriller':
-            getThrillerUserCollections();
-            break;
-        case 'Comedy':
-            getComedyUserCollections();
-            break;
-        case 'Fiction':
-            geFictionUserCollections();
-            break;
-        case 'Horror':
-            getHorrorUserCollections();
-            break;
-    }
+    getCollectionDetailswithCollectionId(collectionId)
 }
 
 const createMovieSection = () => {
@@ -392,191 +374,11 @@ const createMovieSection = () => {
     return movieDetailHtml;
 };
 
-function getActionUserCollections() {
-
-    // clear the Contents of the Main div Tag
-    clearBox('contentDiv');
-    const userCollectionHtml = createInitialUserCollectionHtml();
-    document.getElementById('contentDiv').appendChild(userCollectionHtml);
-
-    collection = 'Action';
-    let span = document.getElementById('searchFilterText');
-    span.innerHTML = '<em>' + collection + '</em>';
-
-    let urlForUserCollections = "http://localhost:3000/userCollections";
-    console.log(urlForUserCollections);
-
-    // GET the Movies
-    httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-}
-
-function processResponseForCollection(responseText) {
-    let response = JSON.parse(responseText);
-    console.log(response);
-    if (response.length > 0) {
-        let movieCounter = 0;
-        let group1Tag = document.getElementById('group1');
-        let group2Tag = document.getElementById('group2');
-        let group3Tag = document.getElementById('group3');
-        let group4Tag = document.getElementById('group4');
-
-        for (let i = 0; i <= response.length; i++) {
-            /*
-            <div class="card-body">
-            <h5 class="card-title">Jurassic School</h5>
-            <a href="../src/movie.html?movieId=438817&amp;source=userCollection"><img src="https://image.tmdb.org/t/p/w185_and_h278_bestv2/ykgi4N8r5YqL3LOi1SFrYPWjK74.jpg" alt="Jurassic School"></a>
-            <p>Nerdy middle schooler Tommy is forced take care of a baby dinosaur after his cloned science fair pro...</p>
-            <button class="btn btn-danger btn-sm float-center delete" value="438817">Delete</button></div>
-            */
-            let movie = response[i];
-            console.log(collection);
-            if (movie && movie.genre.toLowerCase() === collection.toLowerCase()) {
-                ++movieCounter;
-
-                let movieId = movie.id;
-                let url = 'https://api.themoviedb.org/3/movie/' + movieId + '?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1';
-
-                httpSync(url, (responseText) => {
-                    let desiredMovie = JSON.parse(responseText);
-                    console.log(desiredMovie);
-                    let desiredMovieDiv = createMovieCardForCollection(desiredMovie);
-                    console.log(movieCounter);
-
-                    if (movieCounter <= 3) {
-                        console.log(desiredMovieDiv);
-
-                        group1Tag.appendChild(desiredMovieDiv);
-                    }
-                    else if (movieCounter > 3 && movieCounter <= 6)
-                        group2Tag.appendChild(desiredMovieDiv);
-                    else if (movieCounter > 6 && movieCounter <= 9)
-                        group3Tag.appendChild(desiredMovieDiv);
-                    else if (movieCounter > 10 && movieCounter <= 12)
-                        group4Tag.appendChild(desiredMovieDiv);
-                }, 'GET', null);
-
-
-                /*
-                var cardDivTag = document.createElement('div');
-                cardDivTag.className = "card";
-                cardDivTag.id = movie.id;
-                var cardBodyDivTag = document.createElement('div');
-                cardBodyDivTag.className = "card-body";
-                var h5 = document.createElement('h5');
-                h5.className = "card-title";
-                h5.textContent = movie.title;
-                var imgTag = document.createElement('img');
-                imgTag.src = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + movie.poster_path;
-                imgTag.alt = movie.title;
-                var anchorTag = document.createElement('a');
-                anchorTag.href = '../src/movie.html?movieId=' + movie.id + '&source=userCollection';
-                anchorTag.appendChild(imgTag);
-                var pTag = document.createElement('p');
-                if (movie.overview.length > 100)
-                    pTag.textContent = movie.overview.substring(0, 100) + '...';
-                else
-                    pTag.textContent = movie.overview;
-
-                var deleteButton = document.createElement('button');
-                deleteButton.className = 'btn btn-danger btn-sm float-center delete';
-                deleteButton.value = movie.id;
-                deleteButton.textContent = 'Delete';
-                deleteButton.addEventListener('click', removeMovie);
-
-                cardBodyDivTag.appendChild(h5);
-                cardBodyDivTag.appendChild(anchorTag);
-                cardBodyDivTag.appendChild(pTag);
-                cardBodyDivTag.appendChild(deleteButton);
-                cardDivTag.appendChild(cardBodyDivTag);
-
-                */
-
-            }
-        }
-    }
-}
-
-function getThrillerUserCollections() {
-    // clear the Contents of the Main div Tag
-    clearBox('contentDiv');
-    const userCollectionHtml = createInitialUserCollectionHtml();
-    document.getElementById('contentDiv').appendChild(userCollectionHtml);
-
-    collection = 'Thriller';
-    var span = document.getElementById('searchFilterText');
-    span.innerHTML = '<em>' + collection + '</em>';
-
-    var urlForUserCollections = "http://localhost:3000/userCollections";
-    console.log(urlForUserCollections);
-
-    // GET the Movies
-    httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-}
-
-function getComedyUserCollections() {
-    // clear the Contents of the Main div Tag
-    clearBox('contentDiv');
-    const userCollectionHtml = createInitialUserCollectionHtml();
-    document.getElementById('contentDiv').appendChild(userCollectionHtml);
-
-    collection = 'Comedy';
-    var span = document.getElementById('searchFilterText');
-    span.innerHTML = '<em>' + collection + '</em>';
-
-    var urlForUserCollections = "http://localhost:3000/userCollections";
-    console.log(urlForUserCollections);
-
-    // GET the Movies
-    httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-}
-
-function geFictionUserCollections() {
-    // clear the Contents of the Main div Tag
-    clearBox('contentDiv');
-    const userCollectionHtml = createInitialUserCollectionHtml();
-    document.getElementById('contentDiv').appendChild(userCollectionHtml);
-
-    collection = 'Fiction';
-    var span = document.getElementById('searchFilterText');
-    span.innerHTML = '<em>' + collection + '</em>';
-
-    var urlForUserCollections = "http://localhost:3000/userCollections";
-    console.log(urlForUserCollections);
-
-    // GET the Movies
-    httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-
-}
-
-function getHorrorUserCollections() {
-
-    // clear the Contents of the Main div Tag
-    clearBox('contentDiv');
-    const userCollectionHtml = createInitialUserCollectionHtml();
-    document.getElementById('contentDiv').appendChild(userCollectionHtml);
-
-    collection = 'Horror';
-    var span = document.getElementById('searchFilterText');
-    span.innerHTML = '<em>' + collection + '</em>';
-
-    var urlForUserCollections = "http://localhost:3000/userCollections";
-    console.log(urlForUserCollections);
-
-    // GET the Movies
-    httpAsync(urlForUserCollections, processResponseForCollection, 'GET', null);
-}
-
 export const loadInitialPage = () => {
     const initalHtml = createInitialSection();
     document.getElementById('contentDiv').appendChild(initalHtml);
 
     document.getElementById('allCollections').addEventListener('click', getAllUserCollections); //
-
-    document.getElementById('actionMore').addEventListener('click', getActionUserCollections);
-    document.getElementById('thrillerMore').addEventListener('click', getThrillerUserCollections);
-    document.getElementById('comedyMore').addEventListener('click', getComedyUserCollections);
-    document.getElementById('fictionMore').addEventListener('click', geFictionUserCollections);
-    document.getElementById('horrorMore').addEventListener('click', getHorrorUserCollections);
 
     // Get the Popular Movies
     const urlForPopular = "https://api.themoviedb.org/3/movie/popular?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1";
@@ -586,7 +388,7 @@ export const loadInitialPage = () => {
 
     // GET the Movies
     httpAsync(urlForPopular, processResponseForPopular, "GET", null);
-    httpAsync(urlForUserCollections, processResponseForUserCollections, "GET", null);
+    httpAsync(urlForUserCollections, processRespForUserCollections, 'GET', null);
 }
 
 export const createInitialMovieCollectionHtml = () => {
@@ -667,52 +469,127 @@ function processResponseForPopular(responseText) {
     }
 }
 
-// Process the Response for UserCollections of the Main Page
-function processResponseForUserCollections(responseText) {
+function processRespForUserCollections(responseText) {
     let response = JSON.parse(responseText);
-    console.log(response);
-    let actionCount = 0;
-    let thrillerCount = 0;
-    let comedyCount = 0;
-    let scienceFictionCount = 0;
-    let horrorCount = 0;
 
-    //console.log(response.results[0]);
     if (response.length > 0) {
-        let actionDiv = document.getElementById('userCardAction');
-        let thrillerDiv = document.getElementById('userCardThriller');
-        let comedyDiv = document.getElementById('userCardComedy');
-        let scienceFictionDiv = document.getElementById('userCardScienceFiction');
-        let horrorDiv = document.getElementById('userCardHorror');
-
-        console.log(actionDiv);
         for (var i = 0; i < response.length; i++) {
-            let movie = response[i];
-            let cardDiv = createMovieCard(movie, true);
-
-            if (movie.genre === 'Action' && actionCount < 4) {
-                ++actionCount;
-                actionDiv.appendChild(cardDiv);
-            }
-            else if (movie.genre === 'Thriller' && thrillerCount < 4) {
-                ++thrillerCount;
-                thrillerDiv.appendChild(cardDiv);
-            }
-            else if (movie.genre === 'Comedy' && comedyCount < 4) {
-                ++comedyCount;
-                comedyDiv.appendChild(cardDiv);
-            }
-            else if (movie.genre === 'Science Fiction' && scienceFictionCount < 4) {
-                ++scienceFictionCount;
-                scienceFictionDiv.appendChild(cardDiv);
-            }
-            else if (movie.genre === 'Horror' && horrorCount < 4) {
-                ++horrorCount;
-                horrorDiv.appendChild(cardDiv);
-            }
+            let collection = response[i];
+            let collectionName = collection.name;
+            console.log(collection);
+            createUserCollectionCard(collection);
         }
     }
 }
+
+const createUserCollectionCard = (collection) => {
+    let userCollectionCardElement = createHTMLElement(
+        `
+        <div class="row">
+            <div class="col-sm-12">
+                <h4>${collection.name}</h4>
+                <div class="card-group" id='collection${collection.id}'>
+                </div>
+                <button href="#" class="addBtn btn btn-primary" id='collection${collection.id}More'>More...</button>
+            </div>
+        </div>
+        `
+    );
+
+    let userCollectionsCardBody = document.getElementById('userCollectionsCardBody');
+    userCollectionsCardBody.appendChild(userCollectionCardElement);
+
+    // Show only first three.  Rest can be shown via "More..." button.
+    let movieIds = collection.movies.slice(0, 3);
+    let collectionId = 'collection'.concat(collection.id);
+    let collectionIdMore = collectionId.concat('More');
+    console.log(collectionId);
+    let userCollectionCard = document.getElementById(collectionId);
+    let moreButton = document.getElementById(collectionIdMore)
+
+    moreButton.addEventListener('click', getCollectionDetails);
+
+    for (let movieId of movieIds) {
+        userCollectionCard.appendChild(createMovieSearchCardFromMovieId(movieId));
+    }
+
+}
+
+function getCollectionDetails(e) {
+    let collectionIdMore = e.target.id;
+    let collectionId = collectionIdMore.replace('collection', '').replace('More', '');
+    console.log(collectionId);
+    getCollectionDetailswithCollectionId(collectionId);
+}
+
+function getCollectionDetailswithCollectionId(collectionId) {
+    // clear the Contents of the Main div Tag
+    clearBox('contentDiv');
+    const userCollectionHtml = createInitialUserCollectionHtml();
+    document.getElementById('contentDiv').appendChild(userCollectionHtml);
+
+    let collectionsUrl = 'http://localhost:3000/userCollections/' + collectionId;
+    httpAsync(collectionsUrl, processResForCollection, 'GET', null);
+}
+
+
+function processResForCollection(responseText) {
+    let collectionResponse = JSON.parse(responseText);
+    console.log(collectionResponse);
+    let movieCounter = 0;
+    collection = collectionResponse.name;
+    let span = document.getElementById('searchFilterText');
+    span.innerHTML = '<em>' + collection + '</em>';
+
+    let group1Tag = document.getElementById('group1');
+    let group2Tag = document.getElementById('group2');
+    let group3Tag = document.getElementById('group3');
+    let group4Tag = document.getElementById('group4');
+
+    for (let movieId of collectionResponse.movies) {
+        ++movieCounter;
+        let desiredMovieDiv = createMovieCardFromMovieId(movieId);
+
+        if (movieCounter <= 3) {
+            console.log(desiredMovieDiv);
+            group1Tag.appendChild(desiredMovieDiv);
+        }
+        else if (movieCounter > 3 && movieCounter <= 6)
+            group2Tag.appendChild(desiredMovieDiv);
+        else if (movieCounter > 6 && movieCounter <= 9)
+            group3Tag.appendChild(desiredMovieDiv);
+        else if (movieCounter > 10 && movieCounter <= 12)
+            group4Tag.appendChild(desiredMovieDiv);
+
+    }
+}
+
+function createMovieCardFromMovieId(movieId) {
+    let url = 'https://api.themoviedb.org/3/movie/' + movieId + '?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1';
+    let desiredMovieDiv = null;
+
+    httpSync(url, (responseText) => {
+        let desiredMovie = JSON.parse(responseText);
+        console.log(desiredMovie);
+        desiredMovieDiv = createMovieCardForCollection(desiredMovie);
+    }, 'GET', null);
+
+    return desiredMovieDiv;
+}
+
+function createMovieSearchCardFromMovieId(movieId) {
+    let url = 'https://api.themoviedb.org/3/movie/' + movieId + '?api_key=8ea0aad7a07343596262232e43a21cda&language=en-US&page=1';
+    let desiredMovieDiv = null;
+
+    httpSync(url, (responseText) => {
+        let desiredMovie = JSON.parse(responseText);
+        console.log(desiredMovie);
+        desiredMovieDiv = createMovieSearchCard(desiredMovie);
+    }, 'GET', null);
+
+    return desiredMovieDiv;
+}
+
 
 function createHTMLElement(html) {
     const template = document.createElement('template');
@@ -752,8 +629,6 @@ const createInitialUserCollectionsHtml = () => {
         `
     );
 
-
-
     return initialCollectionsSection;
 }
 
@@ -790,4 +665,7 @@ function processResponseForMovieDetail(responseText) {
 
     let descriptionDiv = document.getElementById('descriptionDiv');
     descriptionDiv.appendChild(createMovieDetailCard(movie));
+
+    let collectionsUrl = 'http://localhost:3000/userCollections';
+    httpSync(collectionsUrl, getDifferentUserCollections, 'GET', null);
 }

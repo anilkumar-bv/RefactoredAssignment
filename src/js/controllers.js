@@ -1,5 +1,5 @@
-import {clearBox, httpAsync} from './services';
-import {createInitialMovieCollectionHtml,createMovieSearchCard} from './views';
+import { clearBox, httpAsync } from './services';
+import { createInitialMovieCollectionHtml, createMovieSearchCard } from './views';
 
 export const filterItems = () => {
     let filter = document.getElementById('filterMovies');
@@ -27,9 +27,6 @@ export const filterItems = () => {
 
     // GET the Movies
     httpAsync(url, processResponseForMovieCollection, "GET", null);
-    
-    // Redirect to the Search Screen to fetch Results
-    //window.location.href = '../src/moviesCollection.html?movieFilter=' + text;
 }
 
 // process the Response
@@ -54,33 +51,8 @@ function processResponseForMovieCollection(responseText) {
                 </div>
             </div>
             */
-            var movie = response.results[i];
-            /*
-            var cardDivTag = document.createElement('div');
-            cardDivTag.className = "card";
-            var cardBodyDivTag = document.createElement('div');
-            cardBodyDivTag.className = "card-body";
-            var h5 = document.createElement('h5');
-            h5.className = "card-title";
-            h5.textContent = movie.title;
-            var imgTag = document.createElement('img');
-            imgTag.src = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + movie.poster_path;
-            imgTag.alt = movie.title;
-            var anchorTag = document.createElement('a');
-            anchorTag.href = '../src/movie.html?movieId=' + movie.id + '&source=search';
-            anchorTag.appendChild(imgTag);
-            var pTag = document.createElement('p');
-            if (movie.overview.length > 100)
-                pTag.textContent = movie.overview.substring(0, 100) + '...';
-            else
-                pTag.textContent = movie.overview;
-
-            cardBodyDivTag.appendChild(h5);
-            cardBodyDivTag.appendChild(anchorTag);
-            cardBodyDivTag.appendChild(pTag);
-            cardDivTag.appendChild(cardBodyDivTag);
-            */
-           let cardDivTag = createMovieSearchCard(movie);
+            let movie = response.results[i];
+            let cardDivTag = createMovieSearchCard(movie);
 
             if (i <= 2)
                 group1Tag.appendChild(cardDivTag);
