@@ -339,12 +339,10 @@ function getDifferentUserCollections(responseText) {
     }
 }
 
-let collection = null;
-
 function displayMoviesOfCollection() {
     let selectList = document.getElementById('collectionsList');
     let collectionId = selectList.options[selectList.selectedIndex].value;
-    collection = selectList.options[selectList.selectedIndex].text;
+    let collection = selectList.options[selectList.selectedIndex].text;
     if (collection === 'Select') {
         alert('Please select a Collection');
         return false;
@@ -537,7 +535,7 @@ function processResForCollection(responseText) {
     let collectionResponse = JSON.parse(responseText);
     console.log(collectionResponse);
     let movieCounter = 0;
-    collection = collectionResponse.name;
+    let collection = collectionResponse.name;
     let span = document.getElementById('searchFilterText');
     span.innerHTML = '<em>' + collection + '</em>';
 
